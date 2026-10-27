@@ -27,3 +27,14 @@ AI-конструктор городских прогулок. Прототип 
 
 - `index.html` — весь прототип (HTML, CSS, JS без зависимостей)
 - `logo.png` — логотип
+
+## Мокапы
+
+Мокапы снимаются с этого же `index.html`, поэтому совпадают с прототипом один в один:
+
+```
+pip install playwright && python3 -m playwright install chromium
+python3 tools/render.py
+```
+
+Результат — папка `mockups/`: 7 PNG в рамке iPhone 15 с прозрачным фоном и `mockups/screens/` — экраны без рамки 1179×2556. Параметры кадров описаны в начале `tools/render.py`.
