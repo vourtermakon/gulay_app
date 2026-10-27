@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F4EE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Гуляй! — прототип</title>
+<link rel="icon" href="logo.png">
+<style>
+:root{
+  --bg:#F6F4EE; --card:#FFFFFF;
+  --g900:#173D2A; --g700:#2C6644; --g500:#5E9670; --g200:#B0CEA9; --g100:#E6EFE1;
+  --coral:#E8603F; --coral-d:#C94E30; --coral100:#FDE6DE;
+  --ink:#1C1C1E; --ink2:#6B6B70; --ink3:#A3A3A8; --sep:#E4E1D8;
+  --font:-apple-system,"SF Pro Text","SF Pro Display",Inter,system-ui,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#E9E7E1;font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
+/* устройство */
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center}
+.phone{position:relative;width:393px;height:852px;background:var(--bg);overflow:hidden}
+body.framed .phone{border-radius:55px;box-shadow:0 0 0 11px #1A1A1C,0 0 0 13px #3A3A3D,0 30px 80px rgba(0,0,0,.25)}
+body.framed .stage{padding:40px 0}
+body.mobile{background:var(--bg)}
+body.mobile .phone{width:100%;height:100dvh;min-height:100%}
+.island{display:none}
+body.framed .island,body.mock .island{display:block;position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000;z-index:90}
+.statusbar{display:none;height:54px;padding:0 30px 0 44px;align-items:center;justify-content:space-between;font-weight:600;font-size:17px;position:relative;z-index:40;flex:none}
+body.framed .statusbar,body.mock .statusbar{display:flex}
+.safe-top{flex:none}
+body.mobile .safe-top{height:env(safe-area-inset-top)}
+.sb-icons{display:flex;gap:6px;align-items:center}
+.home-ind{display:none}
+body.framed .home-ind,body.mock .home-ind{display:block;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#111;z-index:95}
+/* экраны */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;position:relative}
+.scroll::-webkit-scrollbar{display:none}
+.pad{padding:0 16px}
+.nav{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 6px;position:relative;flex:none}
+.nav-title{position:absolute;left:50%;transform:translateX(-50%);font-weight:600;font-size:17px;white-space:nowrap}
+.iconbtn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--g700);border-radius:22px}
+.iconbtn:active{opacity:.4}
+.largetitle{font-size:34px;line-height:41px;font-weight:700;letter-spacing:.2px;margin:2px 0 4px}
+.sub{font-size:15px;line-height:20px;color:var(--ink2)}
+.prompt{margin-top:12px;background:var(--card);border-radius:16px;padding:12px 10px 8px 14px;border:1.5px solid transparent}
+.prompt:focus-within{border-color:var(--g500)}
+.prompt textarea{width:100%;border:0;outline:0;resize:none;font:inherit;font-size:17px;line-height:22px;color:var(--ink);background:transparent;height:46px;padding:0}
+.prompt-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:8px}
+.hint{font-size:13px;color:var(--ink3)}
+.mic{width:44px;height:44px;border-radius:22px;background:var(--g100);display:flex;align-items:center;justify-content:center;color:var(--g700);flex:none}
+.mic.rec{background:var(--coral);color:#fff;animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,96,63,.45)}100%{box-shadow:0 0 0 14px rgba(232,96,63,0)}}
+.secthead{font-size:13px;text-transform:uppercase;letter-spacing:.3px;color:var(--ink2);margin:18px 16px 6px}
+.group{background:var(--card);border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;min-height:44px;padding:0 12px;gap:12px;width:100%;text-align:left;position:relative}
+.row+.row::before{content:"";position:absolute;top:0;left:53px;right:0;height:.5px;background:var(--sep)}
+button.row:active{background:#F0EEE8}
+.ico{width:29px;height:29px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.row .lbl{flex:1;font-size:17px}
+.row .val{font-size:17px;color:var(--ink2);white-space:nowrap}
+.chev{color:#C4C1B8;flex:none}
+.seg{display:flex;background:#EEEBE3;border-radius:9px;padding:2px;height:34px;width:100%}
+.seg button{flex:1;border-radius:7px;font-size:13px;font-weight:500;text-align:center}
+.seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.segrow{padding:2px 12px 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:36px;padding:0 14px;border-radius:18px;background:var(--card);font-size:15px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--sep)}
+.chip.on{background:var(--g100);border-color:var(--g500);color:var(--g900);font-weight:500}
+.chip.on svg{color:var(--g700)}
+.cta-bar{flex:none;padding:8px 16px 10px;background:var(--bg)}
+.btn{height:50px;width:100%;border-radius:14px;background:var(--coral);color:#fff;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.btn:active{background:var(--coral-d)}
+.btn.green{background:var(--g700)}.btn.green:active{background:var(--g900)}
+.btn.secondary{background:var(--g100);color:var(--g700)}
+.btn.secondary:active{background:#D7E5D0}
+.btnrow{display:flex;gap:10px}
+.tabbar{flex:none;height:83px;background:#FAF9F5;border-top:.5px solid var(--sep);display:flex;padding:0 0 34px;position:relative;z-index:20}
+body.mobile .tabbar{height:calc(49px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:500;color:#9A9890;min-height:49px;text-align:center}
+.tab.on{color:var(--g700)}
+/* экран 2 */
+.filters{display:flex;flex-wrap:wrap;gap:6px;padding:2px 16px 0}
+.pill{height:32px;padding:0 12px;border-radius:16px;background:var(--g100);color:var(--g900);font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.pill .cnt{min-width:20px;height:20px;border-radius:10px;background:var(--g700);color:#fff;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;padding:0 6px}
+.flist{margin:8px 16px 0}
+.flist .row{min-height:40px}
+.flist .row+.row::before{left:12px}
+.flist .k{color:var(--ink2);font-size:15px;flex:1}.flist .v{font-size:15px;font-weight:500}
+.quota{font-size:13px;color:var(--ink2);margin:12px 16px 0}
+.quota b{color:var(--ink);font-weight:600}
+.rcard{display:block;width:100%;text-align:left;background:var(--card);border-radius:16px;padding:12px;margin-top:10px;border:1.5px solid var(--g200);position:relative;transition:transform .12s,background-color .12s,border-color .12s}
+.rcard:active,.alt:active,.mapbtn:active{transform:scale(.98);background:var(--g100);border-color:var(--g500)}
+@media (hover:hover){.rcard:hover,.alt:hover,.mapbtn:hover{border-color:var(--g500)}.rcard:hover .go{background:var(--g700);color:#fff}.btn:hover{filter:brightness(.95)}.chip:hover,.row:hover,.pill:hover{filter:brightness(.97)}}
+.rtop{display:flex;gap:12px}
+.thumb{width:76px;height:76px;border-radius:12px;flex:none;overflow:hidden;display:block}
+.rbody{flex:1;min-width:0;padding-right:40px}
+.rbadge{font-size:11px;font-weight:600;color:var(--coral);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.rname{font-size:17px;font-weight:600;line-height:22px}
+.rarea{font-size:13px;color:var(--ink2);margin-top:1px}
+.go{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:18px;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center}
+.rmeta{display:flex;gap:14px;margin-top:10px;font-size:14px;font-weight:500;white-space:nowrap}
+.rmeta span{display:inline-flex;align-items:center;gap:4px}
+.rmeta svg{color:var(--g500)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.tag{height:24px;padding:0 9px;border-radius:12px;background:var(--g100);color:var(--g900);font-size:12px;font-weight:500;display:inline-flex;align-items:center}
+.ends{margin-top:10px;padding-top:10px;border-top:.5px solid var(--sep);display:grid;grid-template-columns:14px 1fr;column-gap:10px;font-size:14px;line-height:19px}
+.ends .dot{width:10px;height:10px;border-radius:5px;border:2.5px solid var(--g700);background:#fff;margin:4px 2px 0}
+.ends .dot.f{background:var(--g700)}
+.ends .vline{width:2px;height:12px;background:repeating-linear-gradient(var(--g200) 0 3px,transparent 3px 6px);margin:2px 6px}
+.ends .mid{font-size:12px;color:var(--ink2)}
+/* экран 3 */
+.meta2{display:flex;gap:14px;font-size:15px;font-weight:500;margin-top:8px;flex-wrap:wrap}
+.meta2 span{display:inline-flex;align-items:center;gap:5px}.meta2 svg{color:var(--g500)}
+.mapbtn{border:1.5px solid transparent;transition:transform .12s,background-color .12s;display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:14px;padding:8px;margin-top:14px;min-height:60px}
+.mapbtn .mini{width:64px;height:44px;border-radius:9px;overflow:hidden;flex:none}
+.mapbtn b{font-size:16px;font-weight:600;display:block}.mapbtn small{font-size:13px;color:var(--ink2)}
+.tl{margin-top:14px}
+.pt{display:grid;grid-template-columns:46px 1fr;column-gap:10px}
+.pt .time{font-size:15px;font-weight:600;padding-top:13px;text-align:right;font-variant-numeric:tabular-nums}
+.pcard{background:var(--card);border-radius:14px;padding:11px 12px 11px 12px;display:flex;gap:10px;align-items:flex-start}
+.pcard.changed{box-shadow:inset 0 0 0 1.5px var(--g200)}
+.num{width:24px;height:24px;border-radius:12px;background:var(--g700);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px}
+.pinfo{flex:1;min-width:0}
+.pname{font-size:16px;font-weight:600;line-height:21px}
+.pdesc{font-size:13px;color:var(--ink2);line-height:17px;margin-top:2px}
+.plabels{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center}
+.ent{height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;display:inline-flex;align-items:center}
+.ent.free{background:var(--g100);color:var(--g900)}
+.ent.paid{background:#F2EFE6;color:#6A5B2E}
+.ent.check{background:#FFF1D6;color:#8A5A00}
+.stay{font-size:12px;color:var(--ink2)}
+.swap{width:44px;height:44px;margin:-8px -6px -8px 0;border-radius:22px;display:flex;align-items:center;justify-content:center;color:var(--g700);flex:none}
+.swap:active{background:var(--g100)}
+.walk{display:grid;grid-template-columns:46px 1fr;column-gap:10px;height:30px;align-items:center}
+.walk .ln{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding-left:22px;position:relative;height:100%}
+.walk .ln::before{content:"";position:absolute;left:23px;top:0;bottom:0;border-left:2px dotted var(--g500)}
+.walk .ln span{padding-left:16px;display:inline-flex;gap:5px;align-items:center}
+.toast{position:absolute;left:16px;right:16px;bottom:96px;background:#1F2A23;color:#fff;border-radius:12px;padding:12px 14px;font-size:15px;display:flex;gap:10px;align-items:center;z-index:80;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+/* экран 4 */
+.mapwrap{position:absolute;inset:0;bottom:83px;overflow:hidden;background:#F1EEE6}
+body.mobile .mapwrap{bottom:calc(49px + env(safe-area-inset-bottom))}
+.mapwrap svg.bigmap{position:absolute;inset:0;width:100%;height:100%}
+.mapnav{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:5}
+.mapnav.sb{padding:0;background:linear-gradient(rgba(246,244,238,.95),rgba(246,244,238,0))}.mapnav.sb .statusbar{width:100%}
+.fab{width:44px;height:44px;border-radius:22px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;color:var(--g700)}
+.maptitle{background:#fff;border-radius:18px;height:36px;padding:0 14px;display:flex;align-items:center;font-size:15px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.pointsheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:18px 18px 0 0;padding:8px 16px 14px;box-shadow:0 -6px 24px rgba(0,0,0,.10);z-index:6}
+.pager{display:flex;align-items:center;justify-content:space-between;margin:2px -6px 4px}
+.pager .of{font-size:13px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.3px}
+.pager .iconbtn[disabled]{color:#C9C6BD}
+.dots{display:flex;gap:6px;justify-content:center;margin:2px 0 10px}
+.dots i{width:7px;height:7px;border-radius:4px;background:#D6D3C9}.dots i.on{background:var(--coral);width:18px}
+.grab{width:36px;height:5px;border-radius:3px;background:#C9C6BD;margin:0 auto 8px}
+/* экран 5 */
+.current{background:var(--card);border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center;margin-top:10px}
+.current .num{background:var(--coral)}
+.alt{display:block;width:100%;background:var(--card);border-radius:14px;padding:12px;margin-top:10px;text-align:left;border:1.5px solid transparent;transition:transform .12s,background-color .12s}
+.alt.sel{border-color:var(--g700)}
+.alt-top{display:flex;gap:10px;align-items:flex-start}
+.radio{width:24px;height:24px;border-radius:12px;border:2px solid #C9C6BD;flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.alt.sel .radio{border-color:var(--g700);background:var(--g700);color:#fff}
+.delta{font-size:13px;color:var(--ink2);display:inline-flex;gap:4px;align-items:center}
+/* экран 6 */
+.walkmap{height:112px;border-radius:16px;overflow:hidden;margin-top:6px;position:relative}
+.prog{background:var(--card);border-radius:16px;padding:14px;margin-top:12px}
+.prog-h{display:flex;justify-content:space-between;align-items:baseline}
+.prog-h b{font-size:20px}
+.prog-h span{font-size:13px;color:var(--ink2)}
+.segbar{display:flex;gap:4px;margin:10px 0 12px}
+.segbar i{flex:1;height:6px;border-radius:3px;background:#E3E0D6}
+.segbar i.d{background:var(--g700)}.segbar i.c{background:var(--coral)}
+.now{display:flex;gap:10px;align-items:flex-start}
+.next{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2);margin-top:12px;padding-top:12px;border-top:.5px solid var(--sep)}
+.next b{color:var(--ink);font-weight:600}
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.mini-card{background:var(--card);border-radius:16px;padding:12px}
+.mini-card .h{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
+.wx{display:flex;align-items:center;gap:8px}.wx b{font-size:28px;font-weight:600}
+.mini-card ul{margin:0;padding:0;list-style:none;font-size:14px;line-height:20px}
+.mini-card li{display:flex;gap:6px;align-items:center}
+.fact{background:var(--card);border-radius:16px;padding:12px;margin-top:10px;display:flex;gap:12px;align-items:flex-start}
+.fact .fi{width:36px;height:36px;border-radius:10px;background:var(--coral100);color:var(--coral);display:flex;align-items:center;justify-content:center;flex:none}
+.fact b{font-size:15px;display:block;margin-bottom:2px}.fact p{margin:0;font-size:13px;line-height:18px;color:var(--ink2)}
+/* поиск, выбор точки */
+.search{display:flex;align-items:center;gap:8px;height:44px;background:var(--card);border-radius:12px;padding:0 12px;margin-top:8px;color:var(--ink3);border:1.5px solid transparent}
+.search:focus-within{border-color:var(--g500)}
+.search input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:17px;color:var(--ink);min-width:0;-webkit-appearance:none}
+.pickbtn{margin-top:8px}
+.droppin{position:absolute;transform:translate(-50%,-100%);z-index:4;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
+#pickmap svg{cursor:crosshair}
+/* погода и факт */
+.weather{background:var(--card);border-radius:16px;padding:12px 14px;margin-top:10px}
+.weather .wx{gap:12px}.weather .wx b{font-size:34px;font-weight:600}.wl{font-size:16px;font-weight:600}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.wgrid div{background:var(--bg);border-radius:10px;padding:8px 10px}.wgrid span{display:block;font-size:12px;color:var(--ink2)}.wgrid b{font-size:15px;font-weight:600}
+.wnote{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--g900);margin-top:10px}.wnote svg{color:var(--g700)}
+.fact .more{padding:0;min-height:40px;font-size:15px;gap:6px}
+/* экран 7 */
+.saved-date{font-size:12px;color:var(--ink2);margin-top:8px}
+.empty{text-align:center;color:var(--ink2);padding:60px 24px;font-size:15px;line-height:21px}
+/* общие */
+.wip{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:32px;color:var(--ink2)}
+.wip b{font-size:22px;color:var(--ink)}
+.loading{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:85;text-align:center;padding:24px}
+.loading .brandbig{font-size:28px;font-weight:800}.loading .brandbig i{font-style:normal;color:var(--coral)}
+.loading .bar{width:180px;height:4px;border-radius:2px;background:var(--g100);overflow:hidden}
+.loading .bar i{display:block;height:100%;width:40%;background:var(--g700);border-radius:2px;animation:load 1.1s ease-in-out infinite}
+@keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.28);z-index:70;display:flex;align-items:flex-end}
+.sheet{width:100%;background:var(--bg);border-radius:14px 14px 0 0;padding:8px 16px 34px}
+.opt{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;padding:0 14px;font-size:17px;background:var(--card)}
+.opt+.opt{border-top:.5px solid var(--sep)}
+.opt .ok{color:var(--g700);visibility:hidden}.opt.on .ok{visibility:visible}
+.txtbtn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;color:var(--g700);font-size:17px;font-weight:600;padding:0 8px}
+</style>
+</head>
+<body>
+<div class="stage"><div class="phone" id="phone">
+  <div class="island"></div>
+  <div class="home-ind"></div>
+  <div id="root"></div>
+</div></div>
+
+<script>
+/* ================= Иконки ================= */
+const I={
+ back:'<svg width="13" height="21" viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ chev:'<svg class="chev" width="8" height="13" viewBox="0 0 8 13"><path d="m1.5 1.5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ arrow:'<svg width="10" height="16" viewBox="0 0 8 13"><path d="m1.5 1.5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ down:'<svg width="12" height="8" viewBox="0 0 12 8"><path d="m1.5 1.5 4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ up:'<svg width="12" height="8" viewBox="0 0 12 8"><path d="m1.5 6.5 4.5-4.5 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ left:'<svg width="10" height="16" viewBox="0 0 8 13"><path d="m6.5 1.5-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ mic:'<svg width="20" height="22" viewBox="0 0 20 22"><rect x="6" y="1" width="8" height="13" rx="4" fill="currentColor"/><path d="M2.5 10.5a7.5 7.5 0 0 0 15 0M10 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ clock:'<svg width="17" height="17" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ timer:'<svg width="17" height="18" viewBox="0 0 24 26"><circle cx="12" cy="14.5" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M9 2h6M12 2v3.5M12 14.5V9.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="m19 6.5 1.6-1.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ pin:'<svg width="15" height="18" viewBox="0 0 20 24"><path d="M10 23s8-8 8-13.5A8 8 0 0 0 2 9.5C2 15 10 23 10 23Z" fill="currentColor"/><circle cx="10" cy="9.5" r="3" fill="#fff"/></svg>',
+ people:'<svg width="20" height="16" viewBox="0 0 26 20"><circle cx="9" cy="6" r="4" fill="currentColor"/><circle cx="19" cy="7" r="3.2" fill="currentColor"/><path d="M1 19c0-4.5 3.6-7 8-7s8 2.5 8 7Zm16.5 0c0-2.8-.8-4.8-2.2-6.2 4.4-.6 8.7 1.4 8.7 6.2Z" fill="currentColor"/></svg>',
+ rub:'<svg width="15" height="17" viewBox="0 0 18 22"><path d="M5 21V2h6a5 5 0 0 1 0 10H2m0 4h11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ walk:'<svg width="13" height="14" viewBox="0 0 20 24"><circle cx="11" cy="3" r="2.5" fill="currentColor"/><path d="m6 23 3-8 3 3v5M8 10l2-3 4 4 3 1M10 7 6 9l-1 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ time:'<svg width="13" height="13" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>',
+ wallet:'<svg width="14" height="13" viewBox="0 0 24 22"><rect x="1.5" y="4" width="21" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M1.5 9h21" stroke="currentColor" stroke-width="2.4"/></svg>',
+ route:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.6" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="18" cy="5" r="2.6" fill="currentColor"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2.5 3"/></svg>',
+ saved:'<svg width="20" height="24" viewBox="0 0 20 24"><path d="M3 2h14v20l-7-5-7 5Z" fill="currentColor"/></svg>',
+ bm:'<svg width="18" height="22" viewBox="0 0 20 24"><path d="M3.5 2.5h13v19L10 17l-6.5 4.5Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>',
+ bmf:'<svg width="18" height="22" viewBox="0 0 20 24"><path d="M3.5 2.5h13v19L10 17l-6.5 4.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>',
+ check:'<svg width="16" height="13" viewBox="0 0 16 13"><path d="m1.5 6.5 4.5 4.5 8.5-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ swap:'<svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 9h14l-4-4M20 15H6l4 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ map:'<svg width="20" height="20" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Zm0 0v14m6-12v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+ cloud:'<svg width="30" height="22" viewBox="0 0 30 22"><path d="M8 20h15a6 6 0 0 0 .6-12A8 8 0 0 0 8.3 9.5 5.3 5.3 0 0 0 8 20Z" fill="#C9D3D8"/></svg>',
+ star:'<svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2c.6 4.8 3.2 7.4 8 8-4.8.6-7.4 3.2-8 8-.6-4.8-3.2-7.4-8-8 4.8-.6 7.4-3.2 8-8Z" fill="currentColor"/></svg>',
+ search:'<svg width="17" height="17" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ pinbig:'<svg width="36" height="44" viewBox="0 0 20 24"><path d="M10 23s8-8 8-13.5A8 8 0 0 0 2 9.5C2 15 10 23 10 23Z" fill="#E8603F" stroke="#fff" stroke-width="1.5"/><circle cx="10" cy="9.5" r="3" fill="#fff"/></svg>',
+ flag:'<svg width="16" height="18" viewBox="0 0 20 24"><path d="M4 22V3m0 1h12l-3 4 3 4H4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+function statusbar(t){return `<div class="statusbar"><span>${t||'9:41'}</span><span class="sb-icons">
+<svg width="18" height="12" viewBox="0 0 18 12"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/></svg>
+<svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0Zm-4.3-4.4L2.3 5.6a8 8 0 0 1 11.4 0l-1.4 1.5a6 6 0 0 0-8.6 0ZM.6 3.9-.8 2.5a11.6 11.6 0 0 1 17.6 0l-1.4 1.4a9.7 9.7 0 0 0-14.8 0Z"/></svg>
+<svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#000" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2.2"/><path d="M25 4.5v4c.8-.3 1.4-1.1 1.4-2s-.6-1.7-1.4-2Z" opacity=".45"/></svg>
+</span></div><div class="safe-top"></div>`}
+
+/* ================= Данные =================
+   Места реальные (Санкт-Петербург). Часы работы и цены заведений не подтверждены —
+   в интерфейсе они помечены «Уточнить». Координаты — условные, на стилизованной схеме. */
+const P=(name,desc,stay,entry,x,y,walk)=>({name,desc,stay,entry,x,y,walk});
+const ROUTES={
+ r1:{name:'Мойка и Новая Голландия',area:'Адмиралтейский район · центр',km:'2,4',budget:2000,tags:['Романтично','Тихо','У воды'],best:true,
+  pts:[P('Синий мост','Старт у Исаакиевской площади, самый широкий мост города',13,'free',96,170,'12 мин · 900 м'),
+       P('Набережная Мойки и Поцелуев мост','Тихая прогулка вдоль воды, вечерние огни на мостах',25,'free',190,250,'5 мин · 350 м'),
+       P('Сад Новой Голландии','Остров XVIII века: сад, пруд, павильоны. Часы работы — уточнить',43,'free',268,330,'2 мин · 150 м'),
+       P('Ужин в «Бутылке»','Кафе и рестораны в круглом здании на острове. Цены — уточнить',80,'check',300,410,null)],
+  alts:[['Английская набережная','Вид на Неву и мосты, мало машин вечером','free','+3 мин пешком',['У воды','Красиво']],
+        ['Никольский сад','Тихий сад у Никольского собора','free','+9 мин пешком',['Тихо','Красиво']],
+        ['Галерная улица','Узкая спокойная улица с особняками','free','+2 мин пешком',['Тихо']]]},
+ r2:{name:'Сады Петроградки',area:'Петроградская сторона',km:'3,1',budget:1700,tags:['Тихо','Красиво','Модерн'],
+  pts:[P('Лопухинский сад','Камерный пейзажный сад с прудом у Карповки',30,'free',80,180,'6 мин · 450 м'),
+       P('Набережная Карповки','Спокойная набережная небольшой реки',25,'free',170,240,'10 мин · 750 м'),
+       P('Каменноостровский проспект','Дома в стиле модерн, витрины и фонари',20,'free',250,330,'7 мин · 500 м'),
+       P('Ужин на Петроградской','Заведение подбирается под бюджет — уточнить',75,'check',300,420,null)],
+  alts:[['Александровский парк','Большой парк у Петропавловской крепости','free','+8 мин пешком',['Красиво']],
+        ['Ботанический сад','Парк сада у Аптекарского острова. Вход и часы — уточнить','check','+6 мин пешком',['Тихо','Красиво']],
+        ['Кронверкская набережная','Вид на Петропавловскую крепость','free','+10 мин пешком',['У воды']]]},
+ r3:{name:'Огни Севкабеля',area:'Васильевский остров',km:'2,6',budget:1500,tags:['У воды','Красиво','Без толпы'],
+  pts:[P('Кожевенная линия','Старые заводские корпуса по дороге к заливу',20,'free',90,190,'8 мин · 600 м'),
+       P('Севкабель Порт','Бывшая заводская территория у воды. Вход свободный',40,'free',180,260,'3 мин · 200 м'),
+       P('Набережная у залива','Вид на Финский залив и огни на воде',20,'free',262,320,'4 мин · 250 м'),
+       P('Ужин в Порту','Фудкорт и кафе на территории. Цены — уточнить',75,'check',305,410,null)],
+  alts:[['Набережная Лейтенанта Шмидта','Широкая набережная с видом на Неву','free','+12 мин пешком',['У воды']],
+        ['Румянцевский сад','Небольшой сквер в глубине острова','free','+15 мин пешком',['Тихо']],
+        ['6-я и 7-я линии','Пешеходная улица с кафе','free','+14 мин пешком',['Красиво']]]},
+ // Сценарий «подруги» (Дарья)
+ f1:{name:'Севкабель: еда и залив',area:'Васильевский остров',km:'2,2',budget:2200,tags:['Можно поговорить','У воды','Красиво'],best:true,
+  pts:[P('Кофе на Кожевенной линии','Кофейня по дороге к заливу. Заведение — уточнить',30,'check',90,190,'8 мин · 600 м'),
+       P('Севкабель Порт','Галереи, маркеты и площади у воды. Вход свободный',50,'free',180,260,'3 мин · 200 м'),
+       P('Набережная у залива','Фото на закате у воды',20,'free',262,320,'4 мин · 250 м'),
+       P('Вино и ужин в Порту','Можно сесть компанией. Цены — уточнить',80,'check',305,410,null)],
+  },
+ f2:{name:'Новая Голландия с подругами',area:'Адмиралтейский район · центр',km:'1,9',budget:2500,tags:['Красиво','Без шума','Еда'],
+  pts:[P('Галерная улица','Тихая улица с особняками',20,'free',96,170,'6 мин · 450 м'),
+       P('Сад Новой Голландии','Сад и павильоны на острове. Часы — уточнить',45,'free',190,250,'2 мин · 150 м'),
+       P('Английская набережная','Вид на Неву',20,'free',268,330,'6 мин · 450 м'),
+       P('Ужин в «Бутылке»','Столик на компанию — уточнить',80,'check',300,410,null)]},
+ f3:{name:'Петроградка: дворики и кофе',area:'Петроградская сторона',km:'3,0',budget:1800,tags:['Тихо','Красиво','Модерн'],
+  pts:[P('Кофе у Карповки','Кофейня рядом с набережной. Заведение — уточнить',30,'check',80,180,'6 мин · 450 м'),
+       P('Лопухинский сад','Камерный сад с прудом',25,'free',170,240,'10 мин · 750 м'),
+       P('Каменноостровский проспект','Модерн и витрины',25,'free',250,330,'7 мин · 500 м'),
+       P('Ужин на Петроградской','Под бюджет компании — уточнить',75,'check',300,420,null)]},
+ // демо-сохранённые (места из интервью)
+ s1:{name:'Осень в Лесотехнической академии',area:'Выборгская сторона',km:'2,0',budget:500,tags:['Тихо','Красиво','Осень'],
+  pts:[P('Парк Лесотехнической академии','Старые аллеи, осенью особенно красиво',70,'free',120,220,'5 мин · 350 м'),
+       P('Кофе рядом с парком','Кофейня у выхода из парка — уточнить',30,'check',250,340,null)]},
+ s2:{name:'Парк Победы и Московский',area:'Московский район',km:'3,4',budget:1200,tags:['Красиво','Без толпы в будни'],
+  pts:[P('Парк Победы','Пруды и аллеи, есть где посидеть',50,'free',100,200,'9 мин · 700 м'),
+       P('Московский проспект','Архитектура середины XX века',25,'free',200,280,'6 мин · 450 м'),
+       P('Ужин рядом','Заведение под бюджет — уточнить',70,'check',290,390,null)]},
+};
+ROUTES.f1.alts=ROUTES.r3.alts; ROUTES.f2.alts=ROUTES.r1.alts; ROUTES.f3.alts=ROUTES.r2.alts;
+ROUTES.s1.alts=[['Полковский сад','Небольшой тихий сад — проверенный вариант','free','+15 мин',['Тихо']]];
+ROUTES.s2.alts=[['Парк 300-летия','Набережная у залива','free','на машине',['У воды']]];
+const PAIR=['r1','r2','r3'], FRIENDS=['f1','f2','f3'];
+const ENT={free:'Вход свободный',paid:'Платно',check:'Уточнить'};
+const OPTS={
+ when:['Сегодня, 18:00','Сегодня, 19:00','Завтра, 12:00','Суббота, 14:00'],
+ dur:['2 часа','3 часа','4 часа'],
+ area:['Центр и острова','Петроградская сторона','Васильевский остров','Рядом со мной'],
+ company:['Вдвоём','Компания 3–5'],
+ budget:['до 1 000 ₽','до 2 500 ₽','до 4 000 ₽','Без ограничений'],
+};
+const MOODS=['Романтично','Тихо','Красиво','Без толпы','У воды','Бесплатно'];
+
+/* ================= Состояние ================= */
+const KEY='gulyay.v2';
+const DEF={params:{text:'Свидание вдвоём: тихо, красиво, у воды и спокойный ужин',
+  when:'Сегодня, 18:00',dur:'3 часа',area:'Центр и острова',company:'Вдвоём',budget:'до 2 500 ₽',per:'person',
+  moods:['Романтично','Тихо','У воды']},saved:[{id:'s1',date:'19 октября'},{id:'s2',date:'12 октября'}],repl:{},progress:{},freeLeft:1};
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||null}catch(e){S=null}
+if(!S)S=JSON.parse(JSON.stringify(DEF));
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* время */
+function startMin(){const m=S.params.when.match(/(\d+):(\d+)/);return m?(+m[1])*60+(+m[2]):18*60}
+const hm=m=>String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+function walkMin(w){return w?+w.match(/\d+/)[0]:0}
+function pts(id){ // точки с учётом замен и тайминга
+  const r=ROUTES[id];let t=startMin();
+  return r.pts.map((p,i)=>{
+    let q=p; const a=(S.repl[id]||{})[i];
+    if(a!=null&&typeof a==='object'){q={...p,name:a.name,desc:a.desc,entry:'check',x:a.x,y:a.y,changed:true};}
+    else if(a!=null){const al=r.alts[a];q={...p,name:al[0],desc:al[1],entry:al[2],changed:true};}
+    const o={...q,t:hm(t)}; t+=p.stay+walkMin(p.walk); o.tEnd=t; return o;});
+}
+function span(id){const a=pts(id);return [a[0].t,hm(a[a.length-1].tEnd)]}
+function money(id){const r=ROUTES[id];const n=S.params.company==='Вдвоём'?2:4;
+  const per=S.params.per==='person';const v=per?r.budget:r.budget*n;
+  return '≈ '+v.toLocaleString('ru-RU').replace(/,/g,' ')+' ₽'+(per?'/чел':' на всех')}
+function variantIds(){return S.params.company==='Вдвоём'?PAIR:FRIENDS}
+
+/* ================= Схема карты ================= */
+function baseMap(){
+  let b='';
+  for(let y=-10;y<800;y+=32)for(let x=-10;x<420;x+=40){const w=34-((x*7+y*3)%9),h=26-((x+y)%5);b+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>`}
+  return `<rect width="393" height="800" fill="#F3F1EA"/><g fill="#E6E2D7">${b}</g>
+  <g fill="#D4E5CC"><rect x="210" y="300" width="96" height="70" rx="10"/><rect x="40" y="140" width="80" height="60" rx="12"/><rect x="250" y="560" width="110" height="90" rx="14"/></g>
+  <path d="M-20 95 C80 70 180 120 260 80 S380 40 420 60" fill="none" stroke="#CFE1E9" stroke-width="64"/>
+  <path d="M-20 300 C70 250 140 230 210 270 S320 370 420 330" fill="none" stroke="#CFE1E9" stroke-width="12"/>
+  <path d="M160 0 C150 120 175 200 168 800" fill="none" stroke="#CFE1E9" stroke-width="7"/>
+  <path d="M205 300 h106 v74 h-106z" fill="none" stroke="#CFE1E9" stroke-width="6"/>
+  <path d="M0 520 C120 500 240 540 400 500" fill="none" stroke="#FBFAF6" stroke-width="9"/>
+  <path d="M60 0 C70 200 40 500 70 800" fill="none" stroke="#FBFAF6" stroke-width="7"/>`;
+}
+function routeLine(ps){let d=`M${ps[0].x} ${ps[0].y}`;for(let i=1;i<ps.length;i++){const a=ps[i-1],b=ps[i];const mx=(a.x+b.x)/2;d+=` C${mx} ${a.y} ${mx} ${b.y} ${b.x} ${b.y}`}return d}
+function mapSVG(id,{cur=-1,done=-1,mini=false,cls='',vb}={}){
+  const ps=pts(id);const d=routeLine(ps);
+  let marks='';
+  ps.forEach((p,i)=>{
+    if(mini){marks+= i===0?`<circle cx="${p.x}" cy="${p.y}" r="11" fill="#fff" stroke="#2C6644" stroke-width="7"/>`:
+      `<circle cx="${p.x}" cy="${p.y}" r="${i===ps.length-1?13:9}" fill="#2C6644"/>`;return;}
+    const isCur=i===cur, isDone=i<=done&&!isCur;
+    if(isCur)marks+=`<circle cx="${p.x}" cy="${p.y}" r="26" fill="#E8603F" opacity=".18"/>`;
+    marks+=`<circle cx="${p.x}" cy="${p.y}" r="${isCur?17:14}" fill="${isCur?'#E8603F':isDone?'#2C6644':'#fff'}" stroke="${isCur?'#fff':'#2C6644'}" stroke-width="${isCur?3:2.5}"/>
+     <text x="${p.x}" y="${p.y+5}" text-anchor="middle" font-size="${isCur?15:13}" font-weight="700" font-family="Inter,-apple-system,sans-serif" fill="${isCur||isDone?'#fff':'#2C6644'}">${i+1}</text>`;
+  });
+  const xs=ps.map(p=>p.x),ys=ps.map(p=>p.y);
+  const v=vb||(mini?`${Math.min(...xs)-30} ${Math.min(...ys)-30} ${Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys))+60} ${Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys))+60}`:'0 0 393 769');
+  return `<svg class="${cls}" viewBox="${v}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${baseMap()}
+   <path d="${d}" fill="none" stroke="#2C6644" stroke-width="${mini?12:6}" stroke-linecap="round" opacity=".22"/>
+   <path d="${d}" fill="none" stroke="#2C6644" stroke-width="${mini?8:4}" stroke-linecap="round" stroke-dasharray="${mini?'2 12':'1 9'}"/>${marks}</svg>`;
+}
+
+/* ================= Навигация ================= */
+const stack=[]; const root=document.getElementById('root');
+function go(name,arg,extra){stack.push({name,arg,...(extra||{})});render();}
+function back(){if(stack.length>1){stack.pop();render();}}
+function tabTo(t){stack.length=0;go(t==='saved'?'saved':'input');}
+function cur(){return stack[stack.length-1]}
+function render(){
+  const c=cur(); const fn=SCREENS[c.name]||SCREENS.wip;
+  root.innerHTML=fn(c); (AFTER[c.name]||(()=>{}))(c);
+  try{history.replaceState(null,'','#'+c.name)}catch(e){}
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function tabOf(){return stack[0]&&stack[0].name==='saved'?'saved':'home'}
+function tabbar(){const a=tabOf();return `<nav class="tabbar">
+   <button class="tab ${a==='home'?'on':''}" onclick="tabTo('home')" aria-label="Новая прогулка">${I.route}<span>Прогулка</span></button>
+   <button class="tab ${a==='saved'?'on':''}" onclick="tabTo('saved')" aria-label="Сохранённые">${I.saved}<span>Сохранённые</span></button></nav>`}
+function navbar(title,right){return `<div class="nav"><button class="iconbtn" onclick="back()" aria-label="Назад">${I.back}</button>
+  ${title?`<div class="nav-title">${title}</div>`:''}${right||'<span style="width:44px"></span>'}</div>`}
+function toast(t){const el=document.createElement('div');el.className='toast';el.innerHTML=I.check+'<span>'+t+'</span>';
+  document.getElementById('phone').appendChild(el);setTimeout(()=>el.remove(),2200)}
+const SCREENS={},AFTER={};
+
+/* ===== 1. Ввод ===== */
+SCREENS.input=()=>{
+ const p=S.params;
+ const row=(k,l,ic,c)=>`<button class="row" onclick="pick('${k}','${l}')"><span class="ico" style="background:${c}">${ic}</span>
+   <span class="lbl">${l}</span><span class="val">${esc(p[k])}</span>${I.chev}</button>`;
+ return `<div class="screen">${statusbar()}
+ <div class="scroll"><div class="pad">
+  <div style="height:8px"></div>
+  <h1 class="largetitle">Куда пойдём?</h1>
+  <div class="sub">Опишите прогулку — соберём маршрут</div>
+  <div class="prompt">
+   <textarea id="ptext" aria-label="Описание прогулки" oninput="S.params.text=this.value;save()">${esc(p.text)}</textarea>
+   <div class="prompt-foot"><span class="hint" id="mhint">Например: «тихо, у воды, ужин до 2 500 ₽»</span>
+    <button class="mic" id="mic" onclick="voice()" aria-label="Голосовой ввод">${I.mic}</button></div>
+  </div></div>
+ <div class="secthead">Параметры</div>
+ <div class="pad"><div class="group">
+  ${row('when','Когда',I.clock,'#2C6644')}${row('dur','Длительность',I.timer,'#5E9670')}${row('area','Район',I.pin,'#E8603F')}
+  ${row('company','Компания',I.people,'#173D2A')}${row('budget','Бюджет',I.rub,'#C99A2E')}
+  <div class="segrow"><div class="seg">
+   <button class="${p.per==='person'?'on':''}" onclick="S.params.per='person';save();render()">На человека</button>
+   <button class="${p.per==='group'?'on':''}" onclick="S.params.per='group';save();render()">На компанию</button></div></div>
+ </div></div>
+ <div class="secthead">Настроение</div>
+ <div class="pad"><div class="chips">
+  ${MOODS.map(m=>`<button class="chip ${p.moods.includes(m)?'on':''}" onclick="mood('${m}')" aria-pressed="${p.moods.includes(m)}">${p.moods.includes(m)?I.check:''}${m}</button>`).join('')}
+ </div></div><div style="height:14px"></div>
+ </div>
+ <div class="cta-bar"><button class="btn" onclick="generate()">Собрать маршрут</button></div>
+ ${tabbar()}</div>`;
+};
+function mood(m){const a=S.params.moods,i=a.indexOf(m);i<0?a.push(m):a.splice(i,1);save();const sc=document.querySelector('.scroll').scrollTop;render();document.querySelector('.scroll').scrollTop=sc}
+function pick(key,label){
+  const curv=S.params[key];const el=document.createElement('div');el.className='sheet-bg';
+  el.innerHTML=`<div class="sheet" role="dialog" aria-label="${label}"><div class="grab"></div>
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:17px;padding-left:4px">${label}</b><button class="txtbtn done">Готово</button></div>
+   <div class="group">${OPTS[key].map(o=>`<button class="opt ${o===curv?'on':''}" data-v="${esc(o)}"><span>${o}</span><span class="ok">${I.check}</span></button>`).join('')}</div></div>`;
+  el.addEventListener('click',e=>{const o=e.target.closest('.opt');if(o){S.params[key]=o.dataset.v;save()}
+    if(o||e.target===el||e.target.closest('.done')){el.remove();render()}});
+  document.getElementById('phone').appendChild(el);
+}
+function voice(){
+  const b=document.getElementById('mic'),h=document.getElementById('mhint'),t=document.getElementById('ptext');
+  if(b.classList.contains('rec'))return;
+  b.classList.add('rec');h.textContent='Слушаю…';h.style.color='#E8603F';
+  setTimeout(()=>{const v='Вдвоём часа на три, у воды, без толпы, и поужинать недорого';t.value=v;S.params.text=v;save();
+    b.classList.remove('rec');h.textContent='Распознано — можно поправить';h.style.color=''},1800);
+}
+function generate(){
+  if(!S.params.text.trim()&&!S.params.moods.length){toast('Опишите прогулку или выберите настроение');return}
+  const el=document.createElement('div');el.className='loading';
+  el.innerHTML=`<img src="logo.png" alt="" style="height:76px"><div class="brandbig">Гуляй<i>!</i></div>
+  <div style="font-size:17px;font-weight:600">Собираем маршруты…</div><div class="sub">Проверяем часы работы, расстояния<br>и пешие переходы</div><div class="bar"><i></i></div>`;
+  document.getElementById('phone').appendChild(el);setTimeout(()=>{el.remove();go('variants')},1500);
+}
+
+/* ===== 2. Варианты ===== */
+function routeCard(id,opts={}){
+  const r=ROUTES[id],ps=pts(id),[a,b]=span(id);
+  return `<button class="rcard ${r.best&&!opts.saved?'best':''}" onclick="go('route','${id}')">
+   <span class="go" aria-hidden="true">${I.arrow}</span>
+   <div class="rtop">${mapSVG(id,{mini:true,cls:'thumb'})}<div class="rbody">
+     ${r.best&&!opts.saved?'<div class="rbadge">Лучше всего под запрос</div>':''}
+     <div class="rname">${r.name}</div><div class="rarea">${r.area}</div>
+     <div class="tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div>
+   <div class="rmeta"><span>${I.time}${a}–${b}</span><span>${I.walk}${r.km} км</span><span>${I.wallet}${money(id)}</span></div>
+   <div class="ends"><span class="dot"></span><span>${ps[0].name}</span>
+     ${ps.length>2?`<span class="vline"></span><span class="mid">ещё ${ps.length-2} ${ps.length-2===1?'точка':'точки'} по пути</span>`:'<span class="vline"></span><span></span>'}
+     <span class="dot f"></span><span>${ps[ps.length-1].name}</span></div>
+   ${opts.saved?`<div class="saved-date">Сохранено ${opts.saved}</div>`:''}
+  </button>`;
+}
+SCREENS.variants=(c)=>{
+ const p=S.params,open=!!c.open;
+ const all=[['Когда',p.when],['Длительность',p.dur],['Район',p.area],['Компания',p.company],['Бюджет',p.budget+(p.per==='person'?' на человека':' на компанию')],['Настроение',p.moods.join(', ')||'—']];
+ return `<div class="screen">${statusbar()}${navbar('')}
+  <div class="scroll">
+   <div class="pad"><h1 class="largetitle" style="margin-top:0">3 маршрута</h1></div>
+   <div class="filters">
+     <span class="pill">${p.when}</span><span class="pill">${p.area}</span>
+     <button class="pill" onclick="cur().open=!cur().open;render()" aria-expanded="${open}" aria-label="Все параметры">Все параметры <span class="cnt">${all.length}</span>${open?I.up:I.down}</button>
+   </div>
+   ${open?`<div class="flist group">${all.map(([k,v])=>`<div class="row"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`).join('')}
+     <button class="row" onclick="back()" style="color:var(--g700);font-weight:600;font-size:15px">Изменить параметры</button></div>`:''}
+   <div class="quota">Бесплатно в этом месяце: <b>${S.freeLeft} из 2</b></div>
+   <div class="pad">${variantIds().map(id=>routeCard(id)).join('')}</div>
+   <div style="height:20px"></div>
+  </div>${tabbar()}</div>`;
+};
+
+/* ===== 3. Детали маршрута ===== */
+SCREENS.route=(c)=>{
+ const id=c.arg,r=ROUTES[id],ps=pts(id),[a,b]=span(id),isSaved=S.saved.some(s=>s.id===id);
+ return `<div class="screen">${statusbar()}
+  ${navbar('',`<button class="iconbtn" onclick="toggleSave('${id}')" aria-label="${isSaved?'Убрать из сохранённых':'Сохранить'}">${isSaved?I.bmf:I.bm}</button>`)}
+  <div class="scroll"><div class="pad">
+   <h1 class="largetitle" style="font-size:28px;line-height:34px;margin:0">${r.name}</h1>
+   <div class="sub" style="margin-top:2px">${r.area}</div>
+   <div class="meta2"><span>${I.time}${a}–${b}</span><span>${I.walk}${r.km} км пешком</span><span>${I.wallet}${money(id)}</span></div>
+   <button class="mapbtn" onclick="go('map','${id}',{p:0})"><span class="mini">${mapSVG(id,{mini:true,cls:'thumb" style="width:64px;height:44px;border-radius:9px'})}</span>
+     <span style="flex:1"><b>Маршрут на карте</b><small>${ps.length} точки · пешие переходы</small></span>${I.chev}</button>
+   <div class="tl">
+   ${ps.map((p,i)=>`<div class="pt"><div class="time">${p.t}</div>
+     <div class="pcard ${p.changed?'changed':''}"><span class="num">${i+1}</span><div class="pinfo">
+       <div class="pname">${p.name}</div><div class="pdesc">${p.desc}</div>
+       <div class="plabels"><span class="ent ${p.entry}">${ENT[p.entry]}</span><span class="stay">${fmtStay(ROUTES[id].pts[i].stay)}</span>${p.changed?'<span class="stay" style="color:var(--g700);font-weight:600">Заменено</span>':''}</div></div>
+       <button class="swap" onclick="go('replace','${id}',{p:${i}})" aria-label="Заменить точку">${I.swap}</button></div></div>
+     ${ROUTES[id].pts[i].walk?`<div class="walk"><span></span><div class="ln"><span>${I.walk}${ROUTES[id].pts[i].walk}</span></div></div>`:''}`).join('')}
+   </div><div style="height:12px"></div>
+  </div></div>
+  <div class="cta-bar"><button class="btn" onclick="startWalk('${id}')">Гулять</button></div>
+  ${tabbar()}</div>`;
+};
+function fmtStay(m){return m>=60?`${Math.floor(m/60)} ч ${m%60?m%60+' мин':''}`.trim():`${m} мин`}
+function toggleSave(id){const i=S.saved.findIndex(s=>s.id===id);
+  if(i<0){S.saved.unshift({id,date:'сегодня'});save();render();toast('Маршрут сохранён — он во вкладке «Сохранённые»')}
+  else{S.saved.splice(i,1);save();render();toast('Убрано из сохранённых')}}
+function startWalk(id){if(S.progress[id]==null||S.progress[id]>=ROUTES[id].pts.length)S.progress[id]=0;save();go('walk',id)}
+
+/* ===== 4. Карта ===== */
+SCREENS.map=(c)=>{
+ const id=c.arg,ps=pts(id),i=c.p||0,p=ps[i],n=ps.length;
+ return `<div class="screen"><div class="mapwrap">${mapSVG(id,{cur:i,done:i-1,cls:'bigmap'})}
+   <div class="mapnav sb">${statusbar()}</div>
+   <div class="mapnav" style="top:54px;top:calc(54px * var(--sb,1))"><button class="fab" onclick="back()" aria-label="Назад">${I.back}</button>
+     <span class="maptitle">${ROUTES[id].name}</span><span style="width:44px"></span></div>
+   <div class="pointsheet"><div class="grab"></div>
+     <div class="pager"><button class="iconbtn" ${i===0?'disabled':''} onclick="cur().p=${i-1};render()" aria-label="Предыдущая точка">${I.left}</button>
+       <span class="of">Точка ${i+1} из ${n} · ${p.t}</span>
+       <button class="iconbtn" ${i===n-1?'disabled':''} onclick="cur().p=${i+1};render()" aria-label="Следующая точка">${I.arrow}</button></div>
+     <div class="dots">${ps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>
+     <div class="pname" style="font-size:18px">${p.name}</div><div class="pdesc" style="font-size:14px;line-height:19px">${p.desc}</div>
+     <div class="plabels" style="margin:8px 0 12px"><span class="ent ${p.entry}">${ENT[p.entry]}</span><span class="stay">${fmtStay(ROUTES[id].pts[i].stay)}${ROUTES[id].pts[i].walk?' · дальше '+ROUTES[id].pts[i].walk:''}</span></div>
+     <div class="btnrow"><button class="btn secondary" onclick="go('replace','${id}',{p:${i}})">${I.swap} Заменить</button>
+       <button class="btn" onclick="startWalk('${id}')">Гулять</button></div>
+   </div></div>
+   <div style="flex:1"></div>${tabbar()}</div>`;
+};
+AFTER.map=()=>{const sb=document.querySelector('.mapwrap .statusbar');if(sb&&getComputedStyle(sb).display==='none'){document.querySelectorAll('.mapnav')[1].style.top='calc(env(safe-area-inset-top) + 6px)'}};
+
+/* ===== 5. Замена точки ===== */
+SCREENS.replace=(c)=>{
+ const id=c.arg,i=c.p,r=ROUTES[id],p=pts(id)[i];
+ const sv=(S.repl[id]||{})[i];
+ const sel=c.sel!=null?c.sel:(typeof sv==='number'?sv:undefined);
+ return `<div class="screen">${statusbar()}${navbar('Замена точки')}
+  <div class="scroll"><div class="pad">
+   <div class="secthead" style="margin:6px 0 0">Сейчас в маршруте</div>
+   <div class="current"><span class="num">${i+1}</span><div class="pinfo"><div class="pname">${p.name}</div>
+     <div class="pdesc">${p.t} · ${fmtStay(r.pts[i].stay)} · ${ENT[p.entry]}</div></div></div>
+   <div class="secthead" style="margin:20px 0 0">Своя точка</div>
+   <label class="search">${I.search}<input id="q" type="search" placeholder="Найти место или адрес" value="${esc(c.q||'')}" oninput="cur().q=this.value;altList()" aria-label="Поиск места"></label>
+   <button class="mapbtn pickbtn" onclick="go('pick','${id}',{p:${i}})"><span class="ico" style="background:var(--g700);width:36px;height:36px;border-radius:10px">${I.map}</span>
+     <span style="flex:1"><b>Выбрать точку на карте</b><small>Отметьте место, через которое хотите пройти</small></span>${I.chev}</button>
+   <div class="secthead" style="margin:20px 0 0">Похожие рядом</div>
+   <div id="alts">${altsHTML(id,sel,c.q)}</div>
+   <div style="height:12px"></div>
+  </div></div>
+  <div class="cta-bar"><div class="btnrow">
+   ${sv!=null?`<button class="btn secondary" onclick="undoRepl('${id}',${i})">Вернуть</button>`:''}
+   <button class="btn green" ${sel==null?'style="opacity:.45" aria-disabled="true"':''} onclick="applyRepl('${id}',${i})">Заменить</button></div></div>
+  ${tabbar()}</div>`;
+};
+function altsHTML(id,sel,q){const r=ROUTES[id];q=(q||'').trim().toLowerCase();
+  const list=r.alts.map((a,k)=>[a,k]).filter(([a])=>!q||(a[0]+' '+a[1]).toLowerCase().includes(q));
+  if(!list.length)return `<div class="empty" style="padding:24px 8px">Рядом ничего не нашли по запросу «${esc(q)}».<br>Попробуйте выбрать точку на карте.</div>`;
+  return list.map(([a,k])=>`<button class="alt ${sel===k?'sel':''}" onclick="cur().sel=${k};render()" aria-pressed="${sel===k}">
+     <div class="alt-top"><span class="radio">${sel===k?I.check.replace('width="16" height="13"','width="12" height="10"'):''}</span><div class="pinfo">
+       <div class="pname">${a[0]}</div><div class="pdesc">${a[1]}</div>
+       <div class="plabels"><span class="ent ${a[2]}">${ENT[a[2]]}</span><span class="delta">${I.walk}${a[3]}</span>${a[4].map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div></button>`).join('')}
+function altList(){const c=cur();const sv=(S.repl[c.arg]||{})[c.p];document.getElementById('alts').innerHTML=altsHTML(c.arg,c.sel!=null?c.sel:(typeof sv==='number'?sv:undefined),c.q)}
+AFTER.replace=(c)=>{if(c.q){const el=document.getElementById('q');if(el&&document.activeElement!==el){}}};
+
+/* ===== 5б. Выбор точки на карте ===== */
+SCREENS.pick=(c)=>{
+ const id=c.arg,i=c.p,pin=c.pin;
+ return `<div class="screen"><div class="mapwrap" id="pickmap">${mapSVG(id,{cur:i,done:-1,cls:'bigmap'})}
+   ${pin?`<div class="droppin" style="left:${pin.px}%;top:${pin.py}%">${I.pinbig}</div>`:''}
+   <div class="mapnav sb">${statusbar()}</div>
+   <div class="mapnav" style="top:54px"><button class="fab" onclick="back()" aria-label="Назад">${I.back}</button>
+     <span class="maptitle">Выберите точку</span><span style="width:44px"></span></div>
+   <div class="pointsheet"><div class="grab"></div>
+     ${pin?`<div class="pname" style="font-size:18px">Своя точка</div><div class="pdesc" style="font-size:14px;line-height:19px">Заменит точку ${i+1}. Название, часы работы и вход — уточнить</div>
+       <div class="btnrow" style="margin-top:12px"><button class="btn secondary" onclick="cur().pin=null;render()">Сбросить</button>
+       <button class="btn green" onclick="applyPin()">Добавить в маршрут</button></div>`:
+     `<div class="pname" style="font-size:18px">Нажмите на карту</div><div class="pdesc" style="font-size:14px;line-height:19px;margin-bottom:6px">Отметьте место, через которое хотите пройти вместо точки ${i+1}. Тайминг пересчитаем.</div>`}
+   </div></div><div style="flex:1"></div>${tabbar()}</div>`;
+};
+AFTER.pick=(c)=>{const m=document.querySelector('#pickmap svg');
+  const sb=document.querySelector('.mapwrap .statusbar');if(sb&&getComputedStyle(sb).display==='none'){document.querySelectorAll('.mapnav')[1].style.top='calc(env(safe-area-inset-top) + 6px)'}
+  m.addEventListener('click',e=>{const r=m.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*100,py=(e.clientY-r.top)/r.height*100;
+    const pt=m.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const v=pt.matrixTransform(m.getScreenCTM().inverse());
+    c.pin={px,py,x:Math.round(v.x),y:Math.round(v.y)};render()})};
+function applyPin(){const c=cur();(S.repl[c.arg]=S.repl[c.arg]||{})[c.p]={name:'Своя точка на карте',desc:'Выбрана вами. Название, часы и вход — уточнить',x:c.pin.x,y:c.pin.y};
+  save();stack.pop();stack.pop();render();toast('Точка добавлена, тайминг пересчитан')}
+function applyRepl(id,i){const c=cur();const sv=(S.repl[id]||{})[i];if(c.sel==null&&typeof sv==='number'){back();return}if(c.sel==null){toast('Выберите вариант из списка или точку на карте');return}
+  (S.repl[id]=S.repl[id]||{})[i]=c.sel;save();back();toast('Точка заменена, тайминг пересчитан')}
+function undoRepl(id,i){delete (S.repl[id]||{})[i];save();back();toast('Вернули исходную точку')}
+
+/* ===== 6. Гулять ===== */
+SCREENS.walk=(c)=>{
+ const id=c.arg,ps=pts(id),n=ps.length,k=Math.min(S.progress[id]||0,n-1),p=ps[k],nx=ps[k+1];
+ const [,end]=span(id);
+ const finished=(S.progress[id]||0)>=n;
+ return `<div class="screen">${statusbar(c.clock)}${navbar('Прогулка')}
+  <div class="scroll"><div class="pad">
+   <div class="walkmap">${mapSVG(id,{cur:finished?-1:k,done:k-1+(finished?1:0),cls:'bigmap',vb:'30 192 360 140'}).replace('class="bigmap"','class="bigmap" style="width:100%;height:100%"')}</div>
+   <div class="prog">
+     <div class="prog-h"><b>${finished?'Маршрут пройден':'Точка '+(k+1)+' из '+n}</b><span>финиш ≈ ${end}</span></div>
+     <div class="segbar">${ps.map((_,j)=>`<i class="${finished||j<k?'d':j===k?'c':''}"></i>`).join('')}</div>
+     ${finished?`<div class="sub">Как прошла прогулка? Маршрут останется в «Сохранённых», если его сохранить.</div>`:
+     `<div class="now"><span class="num" style="background:var(--coral)">${k+1}</span><div class="pinfo"><div class="pname">${p.name}</div>
+       <div class="pdesc">${p.t}–${hm(ps[k].tEnd-walkMin(ROUTES[id].pts[k].walk))} · осталось ${remain(id,k)}</div></div></div>
+     ${nx?`<div class="next">${I.walk}Дальше: <b>${nx.name}</b> · ${ROUTES[id].pts[k].walk.split(' · ')[0]}</div>`:''}`}
+   </div>
+   <div class="weather">
+     <div class="wx">${I.cloud}<b>+8°</b><div><div class="wl">Пасмурно</div><div class="pdesc">Ощущается как +5°</div></div></div>
+     <div class="wgrid"><div><span>Ветер у воды</span><b>6 м/с</b></div><div><span>Влажность</span><b>85%</b></div></div>
+     <div class="wnote">${I.check} Дождя до конца прогулки не ожидается</div>
+   </div>
+   <div class="fact ${c.factOpen?'open':''}"><span class="fi">${I.star}</span><div style="flex:1">
+     <b>Интересное по пути: Новая Голландия</b>
+     <p>Рукотворный остров начала XVIII века — его строили для хранения корабельного леса.</p>
+     ${c.factOpen?`<p style="margin-top:8px">Остров образовался после того, как прорыли Адмиралтейский и Крюков каналы. Кирпичные склады и знаменитая арка над каналом появились во второй половине XVIII века.</p>
+     <p style="margin-top:8px">Круглое здание «Бутылка» в XIX веке было морской тюрьмой. Большую часть XX века остров оставался закрытой военной территорией, а для горожан открылся только в 2010-х.</p>`:''}
+     <button class="txtbtn more" onclick="cur().factOpen=!cur().factOpen;render()" aria-expanded="${!!c.factOpen}">${c.factOpen?'Свернуть '+I.up:'Подробнее '+I.down}</button>
+   </div></div>
+   <div style="height:12px"></div>
+  </div></div>
+  <div class="cta-bar"><div class="btnrow">
+   ${finished?`<button class="btn" onclick="tabTo('home')">Новая прогулка</button>`:
+   `<button class="btn secondary" style="flex:0 0 120px" onclick="finishWalk('${id}')">Завершить</button>
+    <button class="btn" onclick="arrive('${id}')">${I.check} Я на месте</button>`}</div></div>
+  ${tabbar()}</div>`;
+};
+function remain(id,k){const ps=pts(id);const left=ps[ps.length-1].tEnd-(ps[k].tEnd-ROUTES[id].pts[k].stay-walkMin(ROUTES[id].pts[k].walk));const h=Math.floor(left/60),m=left%60;return (h?h+' ч ':'')+(m?m+' мин':'')}
+function arrive(id){S.progress[id]=(S.progress[id]||0)+1;save();render();toast(S.progress[id]>=ROUTES[id].pts.length?'Маршрут пройден!':'Отмечено. Следующая точка — на карте')}
+function finishWalk(id){S.progress[id]=ROUTES[id].pts.length;save();render()}
+
+/* ===== 7. Сохранённые ===== */
+SCREENS.saved=()=>`<div class="screen">${statusbar()}
+  <div class="scroll"><div class="pad"><div style="height:8px"></div>
+   <h1 class="largetitle">Сохранённые</h1><div class="sub">${S.saved.length?S.saved.length+' '+plural(S.saved.length,'маршрут','маршрута','маршрутов'):''}</div>
+   ${S.saved.length?S.saved.map(s=>routeCard(s.id,{saved:s.date})).join(''):`<div class="empty">Здесь появятся маршруты, которые вы сохраните.<br>Нажмите на закладку в карточке маршрута.</div>
+     <button class="btn green" onclick="tabTo('home')">Собрать маршрут</button>`}
+   <div style="height:20px"></div></div></div>${tabbar()}</div>`;
+function plural(n,a,b,c){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return c;if(n1>1&&n1<5)return b;if(n1===1)return a;return c}
+
+SCREENS.wip=()=>`<div class="screen">${statusbar()}${navbar('')}
+  <div class="wip"><b>В разработке</b><span>Этот экран появится в следующей версии.</span>
+  <button class="btn secondary" style="width:200px;margin-top:8px" onclick="back()">Вернуться</button></div>${tabbar()}</div>`;
+
+/* ================= Запуск ================= */
+(function(){
+  const q=new URLSearchParams(location.search),mock=q.has('mock');
+  const mobile=!mock&&(matchMedia('(max-width: 600px)').matches||(matchMedia('(pointer:coarse)').matches&&innerWidth<700));
+  document.body.classList.add(mock?'mock':(mobile?'mobile':'framed'));
+  if(mock){document.body.style.background='transparent';document.querySelector('.stage').style.minHeight='0'}
+  if(q.has('reset')){S=JSON.parse(JSON.stringify(DEF))}
+  if(q.get('seed')==='saved'){S.saved.unshift({id:'r1',date:'сегодня'})}
+  if(q.get('prog'))S.progress[q.get('arg')]=+q.get('prog');
+  if(q.has('reset'))save();
+  const s=q.get('screen');
+  if(s==='saved'){stack.push({name:'saved'})}
+  else{stack.push({name:'input'});
+    if(s==='variants')stack.push({name:'variants'});
+    if(['route','map','replace','walk'].includes(s)){stack.push({name:'variants'});stack.push({name:'route',arg:q.get('arg')});
+      if(s!=='route')stack.push({name:s,arg:q.get('arg'),p:+(q.get('p')||0),sel:q.get('sel')!=null?+q.get('sel'):undefined,clock:q.get('clock')||undefined});}}
+  render();
+})();
+</script>
+</body>
+</html>
